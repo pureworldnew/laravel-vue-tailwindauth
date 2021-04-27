@@ -1,22 +1,26 @@
-const path = require('path')
-const fs = require('fs-extra')
-const mix = require('laravel-mix')
-require('laravel-mix-versionhash')
+const path = require("path");
+const fs = require("fs-extra");
+const mix = require("laravel-mix");
+require("laravel-mix-versionhash");
+const tailwindcss = require("tailwindcss");
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 mix
-  .js('resources/js/app.js', 'public/dist/js')
-  .sass('resources/sass/app.scss', 'public/dist/css')
-
-  .disableNotifications()
+  .js("resources/js/app.js", "public/dist/js")
+  .sass("resources/sass/app.scss", "public/dist/css")
+  .options({
+    processCssUrls: false,
+    postCss: [tailwindcss("tailwind.config.js")]
+  })
+  .disableNotifications();
 
 if (mix.inProduction()) {
   mix
     // .extract() // Disabled until resolved: https://github.com/JeffreyWay/laravel-mix/issues/1889
     // .version() // Use `laravel-mix-versionhash` for the generating correct Laravel Mix manifest file.
-    .versionHash()
+    .versionHash();
 } else {
-  mix.sourceMaps()
+  mix.sourceMaps();
 }
 
 mix.webpackConfig({
@@ -24,29 +28,35 @@ mix.webpackConfig({
     // new BundleAnalyzerPlugin()
   ],
   resolve: {
-    extensions: ['.js', '.json', '.vue'],
+    extensions: [".js", ".json", ".vue"],
     alias: {
-      '~': path.join(__dirname, './resources/js')
+      "~": path.join(__dirname, "./resources/js")
     }
   },
   output: {
-    chunkFilename: 'dist/js/[chunkhash].js',
+    chunkFilename: "dist/js/[chunkhash].js",
     path: mix.config.hmr
-      ? '/'
-      : path.resolve(__dirname, mix.inProduction() ? './public/build' : './public')
+      ? "/"
+      : path.resolve(
+          __dirname,
+          mix.inProduction() ? "./public/build" : "./public"
+        )
   }
-})
+});
 
 mix.then(() => {
   if (mix.inProduction()) {
-    process.nextTick(() => publishAseets())
+    process.nextTick(() => publishAseets());
   }
-})
+});
 
-function publishAseets () {
-  const publicDir = path.resolve(__dirname, './public')
+function publishAseets() {
+  const publicDir = path.resolve(__dirname, "./public");
 
-  fs.removeSync(path.join(publicDir, 'dist'))
-  fs.copySync(path.join(publicDir, 'build', 'dist'), path.join(publicDir, 'dist'))
-  fs.removeSync(path.join(publicDir, 'build'))
+  fs.removeSync(path.join(publicDir, "dist"));
+  fs.copySync(
+    path.join(publicDir, "build", "dist"),
+    path.join(publicDir, "dist")
+  );
+  fs.removeSync(path.join(publicDir, "build"));
 }
